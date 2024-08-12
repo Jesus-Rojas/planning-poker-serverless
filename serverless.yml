@@ -1,13 +1,19 @@
-# "org" ensures this Service is used with the correct Serverless Framework Access Key.
 org: unknown2024
-# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
 app: planning-poker-serverless
-# "service" is the name of this project. This will also be added to your AWS resource names.
 service: planning-poker-serverless
 
 provider:
   name: aws
   runtime: nodejs20.x
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:us-east-1:050752607749:table/Users"
 
 functions:
   api:
