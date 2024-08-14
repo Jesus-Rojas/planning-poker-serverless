@@ -7,12 +7,15 @@ import {
   getUsers,
   updateUser,
 } from "./dynamo-client.js";
+import AWS from 'aws-sdk';
 
 const app = express();
 app.use(express.json());
 
 const keysUser = ["name", "cedula"];
 const handleError = (res) => (res.status(500).json({ error: "Problems in server" }));
+const ssm = new AWS.SSM();
+const sns = new AWS.SNS();
 
 app.get("/", (__, res) => {
   return res.status(200).json({
@@ -53,6 +56,7 @@ app.post("/users", async (req, res) => {
   const { name, cedula } = body;
   try {
     await createUser({ name, cedula });
+    console.log("User was created");
     return res.status(204).json();
   } catch (error) {
     handleError(res);
@@ -89,6 +93,42 @@ app.delete("/users/:id", async (req, res) => {
   } catch (error) {
     handleError(res);
   }
+});
+
+app.get('/send-email', async (req, res) => {
+  const message = 'Este es el cuerpo del mensaje de correo electrónico.';
+  const subject = 'Asunto del correo electrónico';
+  const { Parameters: parameters } = await ssm
+    .getParameters({
+      Names: ['arn-theme-sns'],
+      WithDecryption: true
+    })
+    .promise();
+    
+  const topicArn = parameters[0].Value;
+
+  const params = {
+    Message: message,
+    Subject: subject,
+    TopicArn: topicArn
+  };
+
+  try {
+    const data = await sns.publish(params).promise();
+    console.log(`Message ${data.MessageId} sent to the topic ${params.TopicArn}`);
+    return res.status(200).json({
+      message: `Correo enviado con ID: ${data.MessageId}`
+    });
+  } catch (err) {
+    console.error(err, err.stack);
+    handleError(res);
+  }
+});
+
+app.get('/me-user', async (req, res) => {
+  return res.status(200).json({
+    message: 'User is authenticated from api gateway',
+  });
 });
 
 app.use((__, res) => {
