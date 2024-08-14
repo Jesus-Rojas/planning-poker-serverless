@@ -1,6 +1,7 @@
 import { handleError } from "../shared/handle-error.js";
 import { getUserById } from "../shared/dynamo-client.js";
 import { responseDefault } from "../constants/response-default.js";
+import { StatusCodes } from "http-status-codes";
 
 export const handler = async (event) => {
   try {
@@ -10,7 +11,7 @@ export const handler = async (event) => {
     if (!user) {
       return {
         ...responseDefault,
-        statusCode: 404,
+        statusCode: StatusCodes.NOT_FOUND,
         body: JSON.stringify({ error: "User not found" }),
       };
     }

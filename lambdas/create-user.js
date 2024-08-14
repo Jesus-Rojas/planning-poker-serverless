@@ -1,3 +1,4 @@
+import { StatusCodes } from "http-status-codes";
 import { responseDefault } from "../constants/response-default.js";
 import { createUser } from "../shared/dynamo-client.js";
 import { getKeysUser } from "../shared/get-keys-user.js";
@@ -15,7 +16,7 @@ export const handler = async (event) => {
     if (!existAllKeysUser) {
       return {
         ...responseDefault,
-        statusCode: 422,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         body: JSON.stringify({ error: `Missing ${keysUser.join(" or ")}` }),
       };
     }
@@ -25,7 +26,7 @@ export const handler = async (event) => {
     console.log("User was created");
     return {
       ...responseDefault,
-      statusCode: 201,
+      statusCode: StatusCodes.CREATED,
       body: JSON.stringify({
         message: "User created successfully!",
       }),
