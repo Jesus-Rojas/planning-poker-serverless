@@ -1,5 +1,6 @@
 import serverless from "serverless-http";
 import express from "express";
+import AWS from 'aws-sdk';
 import {
   createUser,
   deleteUser,
@@ -7,15 +8,26 @@ import {
   getUsers,
   updateUser,
 } from "./dynamo-client.js";
-import AWS from 'aws-sdk';
+import { ENV } from "./config.js";
+import { getParameterValue, getParameters } from "./ssm.js";
 
 const app = express();
 app.use(express.json());
 
-const keysUser = ["name", "cedula"];
-const handleError = (res) => (res.status(500).json({ error: "Problems in server" }));
-const ssm = new AWS.SSM();
 const sns = new AWS.SNS();
+
+const keysUser = [];
+
+(async () => {
+  const ssmNames = [ENV.TABLE_USERS_PROPERTY_NAME, ENV.TABLE_USERS_PROPERTY_CEDULA];
+  const parameters = await getParameters(ssmNames);
+  if (ssmNames.length !== parameters.length) throw new Error('Missing parameters');
+  const keyUserName = getParameterValue(ENV.TABLE_USERS_PROPERTY_NAME, parameters);
+  const keyUserCedula = getParameterValue(ENV.TABLE_USERS_PROPERTY_CEDULA, parameters);
+  keysUser.push(keyUserName, keyUserCedula);
+})();
+
+const handleError = (res) => (res.status(500).json({ error: "Problems in server" }));
 
 app.get("/", (__, res) => {
   return res.status(200).json({
@@ -98,21 +110,15 @@ app.delete("/users/:id", async (req, res) => {
 app.get('/send-email', async (req, res) => {
   const message = 'Este es el cuerpo del mensaje de correo electrónico.';
   const subject = 'Asunto del correo electrónico';
-  const { Parameters: parameters } = await ssm
-    .getParameters({
-      Names: ['arn-theme-sns'],
-      WithDecryption: true
-    })
-    .promise();
-    
-  const topicArn = parameters[0].Value;
-
+  const ssmNames = [ENV.ARN_THEME_SNS];
+  const parameters = await getParameters(ssmNames);
+  if (parameters.length !== ssmNames.length) return handleError(res);
+  const topicArn = getParameterValue(ENV.ARN_THEME_SNS, parameters);
   const params = {
     Message: message,
     Subject: subject,
-    TopicArn: topicArn
+    TopicArn: topicArn,
   };
-
   try {
     const data = await sns.publish(params).promise();
     console.log(`Message ${data.MessageId} sent to the topic ${params.TopicArn}`);
