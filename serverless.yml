@@ -16,7 +16,61 @@ provider:
       Resource: "arn:aws:dynamodb:us-east-1:050752607749:table/Users"
 
 functions:
-  api:
-    handler: handler.handler
+  hello:
+    handler: lambdas/hello.handler
     events:
-      - httpApi: "*"
+      - httpApi:
+          path: /
+          method: get
+
+  getUser:
+    handler: lambdas/get-user.handler
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: get
+
+  getUsers:
+    handler: lambdas/get-users.handler
+    events:
+      - httpApi:
+          path: /users
+          method: get
+
+  meUser:
+    handler: lambdas/me-user.handler
+    events:
+      - httpApi:
+          path: /me-user
+          method: get
+
+  sendEmail:
+    handler: lambdas/send-email.handler
+    events:
+      - httpApi:
+          path: /send-email
+          method: get
+
+  createUser:
+    handler: lambdas/create-user.handler
+    events:
+      - httpApi:
+          path: /users
+          method: post
+
+  updateUser:
+    handler: lambdas/update-user.handler
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: put
+
+  deleteUser:
+    handler: lambdas/delete-user.handler
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: delete
+
+plugins:
+  - serverless-offline
