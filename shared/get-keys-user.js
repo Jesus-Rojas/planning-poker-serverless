@@ -1,4 +1,4 @@
-import { ENV } from "./config.js";
+import { ENV } from "../constants/config.js";
 import { getParameterValue, getParameters } from "./ssm.js";
 
 export const getKeysUser = async () => {

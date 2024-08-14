@@ -1,7 +1,7 @@
 import AWS from "aws-sdk";
 import { v4 as uuid } from 'uuid';
 
-import { ENV } from "./config.js";
+import { ENV } from "../constants/config.js";
 import { getParameterValue, getParameters } from "./ssm.js";
 
 (async () => {

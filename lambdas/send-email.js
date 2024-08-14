@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 
-import { ENV } from "../shared/config.js";
+import { ENV } from "../constants/config.js";
 import { handleError } from "../shared/handle-error.js";
 import { getParameterValue, getParameters } from "../shared/ssm.js";
 import { responseDefault } from '../constants/response-default.js';
