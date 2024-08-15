@@ -1,6 +1,6 @@
 org: unknown2024
-app: planning-poker-serverless
-service: planning-poker-serverless
+app: planning-poker-lambdas
+service: planning-poker-lambdas
 
 provider:
   name: aws
@@ -14,6 +14,14 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: "arn:aws:dynamodb:us-east-1:050752607749:table/Users"
+    - Effect: Allow
+      Action:
+        - ssm:GetParameters
+      Resource: "arn:aws:ssm:us-east-1:050752607749:parameter/*"
+    - Effect: Allow
+      Action:
+        - SNS:Publish
+      Resource: "arn:aws:sns:us-east-1:050752607749:LambdaErrorAlerts"
 
 functions:
   hello:
@@ -71,6 +79,3 @@ functions:
       - httpApi:
           path: /users/{id}
           method: delete
-
-plugins:
-  - serverless-offline

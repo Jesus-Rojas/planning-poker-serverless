@@ -4,6 +4,12 @@ import { getUserById, updateUser } from "../shared/dynamo-client.js";
 import { getKeysUser } from "../shared/get-keys-user.js";
 import { handleError } from "../shared/handle-error.js";
 
+const handleErrorCustom = () => ({
+  ...responseDefault,
+  statusCode: StatusCodes.NOT_FOUND,
+  body: JSON.stringify({ error: "User not found" }),
+});
+
 export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
@@ -22,18 +28,10 @@ export const handler = async (event) => {
     }
 
     const userId = event.pathParameters.id;
+    if (!userId) return handleErrorCustom();
     const user = await getUserById(userId);
-    
-    if (!user) {
-      return {
-        ...responseDefault,
-        statusCode: StatusCodes.NOT_FOUND,
-        body: JSON.stringify({ error: "User not found" }),
-      };
-    }
-
+    if (!user) return handleErrorCustom();
     const { name, cedula } = body;
-
     await updateUser(userId, { name, cedula });
 
     return {
